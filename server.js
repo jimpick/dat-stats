@@ -3,8 +3,8 @@
 const http = require('http')
 const hyperdrive = require('hyperdrive')
 const serve = require('hyperdrive-http')
-const swarm = require('hyperdrive-archive-swarm')
-const memdb = require('memdb')
+const hyperdiscovery = require('hyperdiscovery')
+const ram = require('random-access-memory')
 const minimist = require('minimist')
 const stats = require('./router')
 
@@ -21,14 +21,22 @@ const link = argv._[0]
 const statsPort = argv.statsPort
 const drivePort = argv.drivePort
 
-const drive = hyperdrive(memdb())
+const archive = hyperdrive(ram, link)
 
-// a remote dat
-const archive = drive.createArchive(link)
+archive.ready(() => {
+  http.createServer(stats(archive)).listen(statsPort)
+  http.createServer(serve(archive)).listen(drivePort)
 
-http.createServer(stats(archive)).listen(statsPort)
-http.createServer(serve(archive)).listen(drivePort)
-swarm(archive)
+  const sw = hyperdiscovery(archive)
+  /*
+  sw.on('connection', function (peer, type) {
+    console.log('connected to', sw.connections.length, 'peers')
+    peer.on('close', function () {
+      console.log('peer disconnected')
+    })
+  })
+  */
 
-console.log(`Serving stats at http://localhost:${statsPort}/`)
-console.log(`Serving files at http://localhost:${drivePort}/`)
+  console.log(`Serving stats at http://localhost:${statsPort}/`)
+  console.log(`Serving files at http://localhost:${drivePort}/`)
+})

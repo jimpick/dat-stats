@@ -2,21 +2,20 @@ const html = require('choo/html')
 const prettyBytes = require('pretty-bytes')
 const createGridView = require('./grid')
 
-module.exports = function (state, prev, send) {
-  const archive = state.archive
-  const feeds = archive.feeds
+module.exports = function (state, emit) {
+  const feeds = state.feeds
 
   function stats () {
     return html`
       <div>
-        <h6>Upload Speed: ${prettyBytes(archive.uploadSpeed)}/s</h6>
-        <h6>Download Speed: ${prettyBytes(archive.downloadSpeed)}/s</h6>
+        <h6>Upload Speed: ${prettyBytes(state.uploadSpeed)}/s</h6>
+        <h6>Download Speed: ${prettyBytes(state.downloadSpeed)}/s</h6>
       </div>
     `
   }
 
   return html`
-    <div class="">
+    <body>
       <header class="header">
         <div class="container">
           <h1>
@@ -29,7 +28,7 @@ module.exports = function (state, prev, send) {
       <main class="main">
         <div class="container">
           <div class="section">
-          <h3 class="key">Archive: <b>${archive.key}</b></h3>
+          <h3 class="key">Archive: <b>${state.key}</b></h3>
           ${stats()}
           </div>
           ${feeds.map(function (feed) {
@@ -37,7 +36,7 @@ module.exports = function (state, prev, send) {
             })}
         </div>
       </main>
-    </div>
+    </body>
   `
 }
 
@@ -53,10 +52,12 @@ function createFeed (feed) {
     return feed.el
   }
 
+  const size = feed.bytes && prettyBytes(feed.bytes)
+  if (!feed.blocks) return
   return html`
     <div class="section">
       <h3>${feed.name}</h3>
-      <h6>Size: ${prettyBytes(feed.bytes)} Blocks: ${feed.blocks.length}</h6>
+      <h6>Size: ${size} Blocks: ${feed.blocks.length}</h6>
       <div>
         ${grid()}
       </div>

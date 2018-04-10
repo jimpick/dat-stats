@@ -1,16 +1,17 @@
+const path = require('path')
 const serverRouter = require('server-router')
-const bankai = require('bankai')
+const bankai = require('bankai/http')
 const hyperServer = require('hypercore-stats-server')
 
 module.exports = function (archive) {
-  const assets = bankai(require.resolve('./index.js'))
-
-  const router = serverRouter([
-    ['/', (req, res) => assets.html(req, res).pipe(res)],
-    ['/bundle.css', (req, res) => assets.css(req, res).pipe(res)],
-    ['/bundle.js', (req, res) => assets.js(req, res).pipe(res)],
-    ['/events', (req, res) => hyperServer(archive, res)]
-  ])
-
-  return router
+  const compiler = bankai(path.join(__dirname, 'index.js'))
+  const router = serverRouter()
+  router.route('GET', '/events', (_, res) => hyperServer(archive, res))
+  router.route('GET', '/*', (req, res) => {
+    compiler(req, res, () => {
+      res.statusCode = 404
+      res.end('not found')
+    })
+  })
+  return router.start()
 }
