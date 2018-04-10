@@ -27,15 +27,7 @@ archive.ready(() => {
   http.createServer(stats(archive)).listen(statsPort)
   http.createServer(serve(archive)).listen(drivePort)
 
-  const sw = hyperdiscovery(archive)
-  /*
-  sw.on('connection', function (peer, type) {
-    console.log('connected to', sw.connections.length, 'peers')
-    peer.on('close', function () {
-      console.log('peer disconnected')
-    })
-  })
-  */
+  hyperdiscovery(archive)
 
   console.log(`Serving stats at http://localhost:${statsPort}/`)
   console.log(`Serving files at http://localhost:${drivePort}/`)

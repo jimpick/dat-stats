@@ -32,6 +32,7 @@ module.exports = function (state, emit) {
           ${stats()}
           </div>
           ${feeds.map(function (feed) {
+              if (!feed.blocks) return
               return createFeed(feed)
             })}
         </div>
@@ -53,7 +54,6 @@ function createFeed (feed) {
   }
 
   const size = feed.bytes && prettyBytes(feed.bytes)
-  if (!feed.blocks) return
   return html`
     <div class="section">
       <h3>${feed.name}</h3>
